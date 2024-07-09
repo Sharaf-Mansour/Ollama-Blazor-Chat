@@ -1,6 +1,6 @@
 ﻿using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-namespace ChatDeepSeekCoderV2.Services;
+namespace OllamaLocalChat.Services;
 #pragma warning disable SKEXP0001, SKEXP0003, SKEXP0010, SKEXP0011, SKEXP0050, SKEXP0052
 public class AIModel
 {

@@ -1,4 +1,4 @@
-﻿namespace ChatDeepSeekCoderV2.Services;
+﻿namespace OllamaLocalChat.Services;
 public enum ChatAgent
 {
     User,

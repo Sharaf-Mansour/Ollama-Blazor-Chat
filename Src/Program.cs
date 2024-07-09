@@ -1,5 +1,5 @@
-using ChatDeepSeekCoderV2.Components;
-using ChatDeepSeekCoderV2.Services;
+using OllamaLocalChat.Components;
+using OllamaLocalChat.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
