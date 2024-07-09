@@ -1,7 +1,84 @@
 ﻿@page "/"
+@using Microsoft.JSInterop
+@using System.Text.RegularExpressions
+@attribute [StreamRendering(true)]
 
-<PageTitle>Home</PageTitle>
+<PageTitle>AiChat</PageTitle>
+<EditForm Enhance Model="this" class="fs-2 container-fluid mt-5 bg-dark">
+  <div class="row my-5 mx-1">
+     <InputTextArea type="text" id="message" placeholder="Give me a task..."  class="form-control  text-white bg-dark fs-3" @bind-Value="Message" />
+    </div>
+    <button @onclick="DoAiStuff" type="submit" class="btn btn-success form-control text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">Ask AI</button>
+    <div class="row mt-5">
+        <div class="col">
+            <div style="white-space: pre-wrap;word-wrap: break-word;">           
+                @((MarkupString)(Response ?? "ASK ME ANYTHING!"))      
+            </div>
+        </div>
+    </div>
+  </EditForm>
 
-<h1>Hello, world!</h1>
+@code
+{
+    private string Message { get; set; }
+    private string Response { get; set; }
+    int Num = 0;
+    public string ParseHtmlContent(string input)
+    {
+        Num++;
+        var pattern = @"```(.*?)\n(.*?)```";
+        var regex = new Regex(pattern, RegexOptions.Singleline);
+        var result = regex.Replace(input, match =>
+        {
+            var lang = match.Groups[1].Value.Trim();
+            var code = match.Groups[2].Value.Trim();
+            return $"<div>\r\n<button class=\"btn btn-info\" onclick=\"copyToClipboard('id{Num}')\">Copy</button>\r\n   <pre><code id='id{Num}' class=\"{lang}\">{System.Net.WebUtility.HtmlEncode(code)}</code></pre></div>";
+        });
+        return (result);
+    }
 
-Welcome to your new app.
+
+    async ValueTask<string> UserAI(string Message)
+    {
+        var CodeAgent = AIModel.AiUserAgent(Message);
+        var chatMessage = "";
+        Response += Environment.NewLine;
+        await foreach (var content in CodeAgent)
+        {
+            chatMessage += content?.Content;
+            Response += content?.Content;
+            await InvokeAsync(StateHasChanged);
+            await _js.InvokeVoidAsync("scrollToEnd");
+
+        }
+        AIModel.ChatHistory.AddAssistantMessage(chatMessage);
+        Response = ParseHtmlContent(Response);
+        return chatMessage;
+    }
+
+    private async Task DoAiStuff()
+    {
+        if (string.IsNullOrWhiteSpace(Message))
+        {
+            Response = "Please ask me something!";
+            return;
+        }
+
+        Response = "Thinking...";
+
+        await Task.Delay(2000);
+        var Answer = await UserAI(Message);
+        await InvokeAsync(StateHasChanged);
+
+        var timer = new System.Timers.Timer(20);
+        timer.Elapsed += async (sender, e) =>
+        {
+            await _js.InvokeVoidAsync("highlightSnippet");
+
+            timer.Stop();
+        };
+        timer.Start();
+        await Task.Delay(1000);
+        await _js.InvokeVoidAsync("scrollToEnd");
+    }
+}
