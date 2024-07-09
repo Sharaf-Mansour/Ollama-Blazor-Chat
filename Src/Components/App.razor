@@ -9,11 +9,29 @@
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="ChatDeepSeekCoderV2.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dark.min.css">
+
     <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
 <body>
     <Routes @rendermode="InteractiveServer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        window.highlightSnippet = () => hljs.highlightAll();
+        window.scrollToEnd = () => window.scrollTo(0, document.body.scrollHeight);
+    </script>
+
+    <script>
+        function copyToClipboard(id) {
+            const code = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                console.log('Code copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    </script>
     <script src="_framework/blazor.web.js"></script>
 </body>
 
