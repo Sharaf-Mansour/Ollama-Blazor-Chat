@@ -4,11 +4,19 @@
 @attribute [StreamRendering(true)]
 
 <PageTitle>AiChat</PageTitle>
-<EditForm Enhance Model="this" class="fs-2 container-fluid mt-5 bg-dark">
+<EditForm Enhance Model="this" class="fs-2 border border-light border-2 rounded-1  container mt-5 bg-dark">
   <div class="row my-5 mx-1">
      <InputTextArea type="text" id="message" placeholder="Give me a task..."  class="form-control  text-white bg-dark fs-3" @bind-Value="Message" />
     </div>
-    <button @onclick="DoAiStuff" type="submit" class="btn btn-success form-control text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">Ask AI</button>
+    <div class="row">
+        <div class="col-1"></div>
+        <button @onclick="()=>DoAiStuff(ChatAgent.System)" type="submit" class="btn btn-danger col-2  text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">System Message</button>
+        <div class="col-2"></div>
+        <button @onclick="()=>DoAiStuff(ChatAgent.User)" type="submit" class="btn btn-info col-2   text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">User Message</button>
+        <div class="col-2"></div>
+        <button @onclick="()=>DoAiStuff(ChatAgent.Assistant)" type="submit" class="btn btn-warning  col-2  text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">Assistant Message</button>
+        <div class="col-1"></div>
+    </div>
     <div class="row mt-5">
         <div class="col">
             <div style="white-space: pre-wrap;word-wrap: break-word;">           
@@ -20,11 +28,13 @@
 
 @code
 {
-    private string Message { get; set; }
-    private string Response { get; set; }
+    private string? Message { get; set; }
+    private string? Response { get; set; }
     int Num = 0;
-    public string ParseHtmlContent(string input)
+    public string ParseHtmlContent(string? input)
     {
+            if (string.IsNullOrWhiteSpace(input))
+                return "";
         Num++;
         var pattern = @"```(.*?)\n(.*?)```";
         var regex = new Regex(pattern, RegexOptions.Singleline);
@@ -38,11 +48,10 @@
     }
 
 
-    async ValueTask<string> UserAI(string Message)
+    async Task UserAI(string Message)
     {
         var CodeAgent = AIModel.AiUserAgent(Message);
         var chatMessage = "";
-        Response += Environment.NewLine;
         await foreach (var content in CodeAgent)
         {
             chatMessage += content?.Content;
@@ -53,32 +62,72 @@
         }
         AIModel.ChatHistory.AddAssistantMessage(chatMessage);
         Response = ParseHtmlContent(Response);
-        return chatMessage;
     }
 
-    private async Task DoAiStuff()
+    async Task SystemAI(string Message)
+    {
+        var CodeAgent = AIModel.AiSystemAgent(Message);
+        var chatMessage = "";
+        await foreach (var content in CodeAgent)
+        {
+            chatMessage += content?.Content;
+            Response += content?.Content;
+            await InvokeAsync(StateHasChanged);
+            await _js.InvokeVoidAsync("scrollToEnd");
+
+        }
+        AIModel.ChatHistory.AddAssistantMessage(chatMessage);
+        Response = ParseHtmlContent(Response);
+    }
+
+    async Task AssistantAI(string Message)
+    {
+        var CodeAgent = AIModel.AiAssistantAgent(Message);
+        var chatMessage = "";
+        await foreach (var content in CodeAgent)
+        {
+            chatMessage += content?.Content;
+            Response += content?.Content;
+            await InvokeAsync(StateHasChanged);
+            await _js.InvokeVoidAsync("scrollToEnd");
+
+        }
+        AIModel.ChatHistory.AddAssistantMessage(chatMessage);
+        Response = ParseHtmlContent(Response);
+    }
+
+
+    private async Task DoAiStuff(ChatAgent Type)
     {
         if (string.IsNullOrWhiteSpace(Message))
         {
             Response = "Please ask me something!";
             return;
         }
-
-        Response = "Thinking...";
-
-        await Task.Delay(2000);
-        var Answer = await UserAI(Message);
-        await InvokeAsync(StateHasChanged);
-
-        var timer = new System.Timers.Timer(20);
+        Response += "<hr/>";
+        Response += $"Human: {Message }";
+        Response += "<hr/>";
+        Response += "Ai: ";
+        var tempMessage = Message;
+            Message = "";
+        if (Type is ChatAgent.System)
+            await SystemAI(tempMessage);
+        else if (Type is ChatAgent.User)
+            await UserAI(tempMessage);
+        else if (Type is ChatAgent.Assistant)
+            await AssistantAI(tempMessage);
+        else return;
+         await InvokeAsync(StateHasChanged);
+        Response += "<hr/>";
+        var timer = new System.Timers.Timer(200);
         timer.Elapsed += async (sender, e) =>
         {
+            await _js.InvokeVoidAsync("highlightSnippet");
             await _js.InvokeVoidAsync("highlightSnippet");
 
             timer.Stop();
         };
         timer.Start();
-        await Task.Delay(1000);
-        await _js.InvokeVoidAsync("scrollToEnd");
+  
     }
 }
