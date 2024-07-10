@@ -6,28 +6,30 @@ public class AIModel
 {
     public List<string> ModelTypes { get; set; } = [ "codegeex4", "deepseek-coder-v2", "qwen2:0.5b", "codestral", "llama3"];
     public ChatHistory ChatHistory { get; set; } = new ("You are an AI Chat Bot");
-    public string ModelID { get; set; } = "deepseek-coder-v2";
+    public string ModelID { get; set; } = "codegeex4";
     static Uri EndPoint => new("http://localhost:11434");
     static IKernelBuilder Builder => Kernel.CreateBuilder();
-    public Kernel ChatKernal() => Builder.AddOpenAIChatCompletion(ModelID, EndPoint,"").Build();
+    public Kernel ChatKernalModel { get; set; }
     public IAsyncEnumerable<StreamingChatMessageContent> AiUserAgent(string message)
     {
+        Kernel ChatKernal() => Builder.AddOpenAIChatCompletion(ModelID, EndPoint, "").Build();
         ChatHistory.AddUserMessage(message);
         return ChatKernal().GetRequiredService<IChatCompletionService>()
-            .GetStreamingChatMessageContentsAsync(ChatHistory,null, ChatKernal());
+            .GetStreamingChatMessageContentsAsync(ChatHistory,null, ChatKernalModel = ChatKernal());
     }
     public IAsyncEnumerable<StreamingChatMessageContent> AiSystemAgent(string message)
     {
-        ChatHistory = new(message);
-       // ChatHistory.AddSystemMessage(message);
+        ChatHistory.AddSystemMessage(message);
+        Kernel ChatKernal() => Builder.AddOpenAIChatCompletion(ModelID, EndPoint, "").Build();
         return ChatKernal().GetRequiredService<IChatCompletionService>()
-            .GetStreamingChatMessageContentsAsync(ChatHistory,null, ChatKernal());
+            .GetStreamingChatMessageContentsAsync(ChatHistory,null, ChatKernalModel = ChatKernal());
     }
     public IAsyncEnumerable<StreamingChatMessageContent> AiAssistantAgent(string message)
     {
         ChatHistory.AddAssistantMessage(message);
+        Kernel ChatKernal() => Builder.AddOpenAIChatCompletion(ModelID, EndPoint, "").Build();
         return ChatKernal().GetRequiredService<IChatCompletionService>()
-            .GetStreamingChatMessageContentsAsync(ChatHistory,null, ChatKernal());
+            .GetStreamingChatMessageContentsAsync(ChatHistory,null, ChatKernalModel = ChatKernal());
     }
 }
  

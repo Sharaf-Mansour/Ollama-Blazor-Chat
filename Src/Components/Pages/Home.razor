@@ -2,11 +2,10 @@
 @using Microsoft.JSInterop
 @using System.Text.RegularExpressions
 @attribute [StreamRendering(true)]
-
 <PageTitle>AiChat</PageTitle>
 <EditForm Enhance Model="this" class="fs-2 border border-light border-2 rounded-1  container mt-5 bg-dark">
-  <div class="row my-5 mx-1">
-     <InputTextArea type="text" id="message" placeholder="Give me a task..."  class="form-control  text-white bg-dark fs-3" @bind-Value="Message" />
+    <div class="row my-5 mx-1">
+        <InputTextArea type="text" id="message" placeholder="Give me a task..." class="form-control  text-white bg-dark fs-3" @bind-Value="Message" />
     </div>
     <div class="row">
         <div class="col-1"></div>
@@ -17,14 +16,26 @@
         <button @onclick="()=>DoAiStuff(ChatAgent.Assistant)" type="submit" class="btn btn-warning  col-2  text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">Assistant Message</button>
         <div class="col-1"></div>
     </div>
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-10 p-0 pt-2">
+            <InputSelect @bind-Value="AIModel.ModelID" class="form-select p-2  form-control text-white bg-dark fs-3">
+                @foreach(var value in AIModel.ModelTypes)
+                {
+                    <option value="@value">@value</option>
+                }
+               </InputSelect>
+        </div>
+        <div class="col-1"></div>
+    </div>
     <div class="row mt-5">
         <div class="col">
-            <div style="white-space: pre-wrap;word-wrap: break-word;">           
-                @((MarkupString)(Response ?? "ASK ME ANYTHING!"))      
+            <div style="white-space: pre-wrap;word-wrap: break-word;">
+                @((MarkupString)(Response ?? "ASK ME ANYTHING!"))
             </div>
         </div>
     </div>
-  </EditForm>
+</EditForm>
 
 @code
 {
@@ -33,8 +44,8 @@
     int Num = 0;
     public string ParseHtmlContent(string? input)
     {
-            if (string.IsNullOrWhiteSpace(input))
-                return "";
+        if (string.IsNullOrWhiteSpace(input))
+            return "";
         Num++;
         var pattern = @"```(.*?)\n(.*?)```";
         var regex = new Regex(pattern, RegexOptions.Singleline);
@@ -95,8 +106,6 @@
         AIModel.ChatHistory.AddAssistantMessage(chatMessage);
         Response = ParseHtmlContent(Response);
     }
-
-
     private async Task DoAiStuff(ChatAgent Type)
     {
         if (string.IsNullOrWhiteSpace(Message))
@@ -105,11 +114,11 @@
             return;
         }
         Response += "<hr/>";
-        Response += $"Human: {Message }";
+        Response += $"Human: {Message}";
         Response += "<hr/>";
         Response += "Ai: ";
         var tempMessage = Message;
-            Message = "";
+        Message = "";
         if (Type is ChatAgent.System)
             await SystemAI(tempMessage);
         else if (Type is ChatAgent.User)
@@ -117,7 +126,7 @@
         else if (Type is ChatAgent.Assistant)
             await AssistantAI(tempMessage);
         else return;
-         await InvokeAsync(StateHasChanged);
+        await InvokeAsync(StateHasChanged);
         Response += "<hr/>";
         var timer = new System.Timers.Timer(200);
         timer.Elapsed += async (sender, e) =>
@@ -128,6 +137,5 @@
             timer.Stop();
         };
         timer.Start();
-  
     }
 }
