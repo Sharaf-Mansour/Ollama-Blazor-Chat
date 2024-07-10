@@ -3,7 +3,7 @@
 @using System.Text.RegularExpressions
 @attribute [StreamRendering(true)]
 <PageTitle>AiChat</PageTitle>
-<EditForm Enhance Model="this" class="fs-2 border border-light border-2 rounded-1  container mt-5 bg-dark">
+<EditForm Enhance Model="this" style="max-width:95%" class="fs-2 border border-light border-2 rounded-1 container-fluid mt-5 bg-dark">
     <div class="row my-5 mx-1">
         <InputTextArea type="text" id="message" placeholder="Give me a task..." class="form-control  text-white bg-dark fs-3" @bind-Value="Message" />
     </div>
