@@ -9,7 +9,7 @@
     </div>
     <div class="row">
         <div class="col-1"></div>
-        <button @onclick="()=>DoAiStuff(ChatAgent.System)" type="submit" class="btn btn-danger col-2  text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">System Message</button>
+        <button @onclick="()=>DoAiStuff(ChatAgent.System)" type="submit" class="btn btn-success col-2  text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">System Message</button>
         <div class="col-2"></div>
         <button @onclick="()=>DoAiStuff(ChatAgent.User)" type="submit" class="btn btn-info col-2   text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">User Message</button>
         <div class="col-2"></div>
@@ -28,6 +28,16 @@
         </div>
         <div class="col-1"></div>
     </div>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-2 p-0 pt-2">
+            <button @onclick="AIModel.ResetChatHistory" class="btn btn-danger col-12  text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">Restart Chat</button>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-2 p-0 pt-2">
+            <button @onclick="ClearChatHistory" class="btn btn-danger col-12  text-dark fs-5 fw-bolder mb-2 px-5 bt-lg">Clear Chat</button>
+        </div>
+    </div>
     <div class="row mt-5">
         <div class="col">
             <div style="white-space: pre-wrap;word-wrap: break-word;">
@@ -42,6 +52,8 @@
     private string? Message { get; set; }
     private string? Response { get; set; }
     int Num = 0;
+    private void ClearChatHistory() => Response = null;
+    
     public string ParseHtmlContent(string? input)
     {
         if (string.IsNullOrWhiteSpace(input))
@@ -116,7 +128,7 @@
         Response += "<hr/>";
         Response += $"Human: {Message}";
         Response += "<hr/>";
-        Response += "Ai: ";
+        Response += $"{AIModel.ModelID} Ai: ";
         var tempMessage = Message;
         Message = "";
         if (Type is ChatAgent.System)

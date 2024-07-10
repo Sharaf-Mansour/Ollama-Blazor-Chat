@@ -9,7 +9,8 @@ public class AIModel
     public string ModelID { get; set; } = "codegeex4";
     static Uri EndPoint => new("http://localhost:11434");
     static IKernelBuilder Builder => Kernel.CreateBuilder();
-    public Kernel ChatKernalModel { get; set; }
+    public Kernel? ChatKernalModel { get; set; }
+    public void ResetChatHistory() => ChatHistory = new("You are an AI Chat Bot");
     public IAsyncEnumerable<StreamingChatMessageContent> AiUserAgent(string message)
     {
         Kernel ChatKernal() => Builder.AddOpenAIChatCompletion(ModelID, EndPoint, "").Build();
