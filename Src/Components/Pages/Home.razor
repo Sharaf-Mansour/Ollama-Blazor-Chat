@@ -144,8 +144,6 @@
         timer.Elapsed += async (sender, e) =>
         {
             await _js.InvokeVoidAsync("highlightSnippet");
-            await _js.InvokeVoidAsync("highlightSnippet");
-
             timer.Stop();
         };
         timer.Start();
